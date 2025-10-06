@@ -5,6 +5,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { Loader2 } from "lucide-react";
+import { apiRequest, queryClient } from "@/lib/queryClient";
+import type { Changeset } from "@shared/schema";
 
 interface ManualCommitProps {
   onCommitSuccess?: () => void;
@@ -25,8 +27,9 @@ export default function ManualCommit({ onCommitSuccess }: ManualCommitProps) {
       return;
     }
 
+    let changeset: Changeset;
     try {
-      JSON.parse(jsonInput);
+      changeset = JSON.parse(jsonInput);
     } catch (e) {
       toast({
         title: "Invalid JSON",
@@ -38,17 +41,26 @@ export default function ManualCommit({ onCommitSuccess }: ManualCommitProps) {
 
     setIsSubmitting(true);
     
-    // Simulate API call
-    setTimeout(() => {
-      console.log('Manual commit triggered with:', jsonInput);
+    try {
+      await apiRequest("POST", "/api/commits", changeset);
+
       toast({
         title: "Success",
-        description: "Changeset committed successfully",
+        description: "Changeset committed successfully to GitHub",
       });
+      
       setJsonInput("");
-      setIsSubmitting(false);
+      await queryClient.invalidateQueries({ queryKey: ["/api/commits"] });
       onCommitSuccess?.();
-    }, 1500);
+    } catch (error) {
+      toast({
+        title: "Commit Failed",
+        description: error instanceof Error ? error.message : "Failed to commit to GitHub",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
