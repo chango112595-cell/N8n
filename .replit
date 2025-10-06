@@ -1,0 +1,6 @@
+run = "n8n start"
+modules = ["nodejs-20"]
+
+[[ports]]
+localPort = 5678
+externalPort = 80
