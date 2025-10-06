@@ -1,0 +1,7 @@
+{
+  "name": "aurora-automation",
+  "version": "1.0.0",
+  "dependencies": {
+    "n8n": "^1.40.0"
+  }
+}
