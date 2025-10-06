@@ -6,7 +6,7 @@ import { commitFilesToGitHub } from "./github";
 import { createHmac } from "crypto";
 
 export async function registerRoutes(app: Express): Promise<Server> {
-  app.post("/api/webhook/aurora/changeset", async (req, res) => {
+  app.post("/api/webhook/aurora/changeset", async (req: any, res) => {
     try {
       const payload = req.body;
       
@@ -23,8 +23,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       const auroraSecret = process.env.AURORA_SECRET || process.env.Aurora_secret;
       if (auroraSecret && auroraSecret !== 'dev-skip') {
+        const rawBody = req.rawBody || JSON.stringify(payload);
         const expectedSig = 'sha256=' + createHmac('sha256', auroraSecret)
-          .update(JSON.stringify(payload))
+          .update(rawBody)
           .digest('hex');
         
         if (sig !== expectedSig) {
